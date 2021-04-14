@@ -53,3 +53,14 @@ func CountIPsInCIDR(cidr string) int64 {
 
 	return mapcidr.CountIPsInCIDR(c).Int64()
 }
+
+func ToCidr(item string) *net.IPNet {
+	if IsIP(item) {
+		item += "/32"
+	}
+	if IsCIDR(item) {
+		_, ipnet, _ := net.ParseCIDR(item)
+		return ipnet
+	}
+	return nil
+}
