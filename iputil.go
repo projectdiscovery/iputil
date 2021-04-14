@@ -64,3 +64,19 @@ func ToCidr(item string) *net.IPNet {
 	}
 	return nil
 }
+
+func AsIPV4CIDR(IPV4 string) *net.IPNet {
+	if IsIP(IPV4) {
+		IPV4 += "/32"
+	}
+	_, network, err := net.ParseCIDR(IPV4)
+	if err != nil {
+		return nil
+	}
+	return network
+}
+
+func AsIPV6CIDR(IPV6 string) string {
+	// todo
+	return IPV6
+}
