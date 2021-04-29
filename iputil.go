@@ -39,7 +39,7 @@ func IsCIDR(str string) bool {
 	return err == nil
 }
 
-// IsCIDR checks if the string is an valid CIDR after replacing - with /
+// IsCIDR checks if the string is a valid CIDR after replacing - with /
 func IsCidrWithExpansion(str string) bool {
 	str = strings.ReplaceAll(str, "-", "/")
 	return IsCIDR(str)
