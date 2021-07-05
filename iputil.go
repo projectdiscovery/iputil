@@ -1,7 +1,12 @@
 package iputil
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -79,4 +84,30 @@ func AsIPV4CIDR(IPV4 string) *net.IPNet {
 func AsIPV6CIDR(IPV6 string) string {
 	// todo
 	return IPV6
+}
+
+// WhatsMyIP attempts to obtain the external ip through public api
+// Copied from https://github.com/projectdiscovery/naabu/blob/master/v2/pkg/scan/externalip.go
+func WhatsMyIP() (string, error) {
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://api.ipify.org?format=text", nil)
+	if err != nil {
+		return "", nil
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New(fmt.Sprintf("error fetching ip: %s", resp.Status))
+	}
+
+	ip, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(ip), nil
 }
