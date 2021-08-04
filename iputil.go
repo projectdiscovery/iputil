@@ -2,7 +2,6 @@ package iputil
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -50,6 +49,7 @@ func IsCidrWithExpansion(str string) bool {
 	return IsCIDR(str)
 }
 
+// CountIPsInCIDR counts the number of ips in cidr
 func CountIPsInCIDR(cidr string) int64 {
 	_, c, err := net.ParseCIDR(cidr)
 	if err != nil {
@@ -59,6 +59,7 @@ func CountIPsInCIDR(cidr string) int64 {
 	return mapcidr.CountIPsInCIDR(c).Int64()
 }
 
+// ToCidr converts a cidr string to net.IPNet pointer
 func ToCidr(item string) *net.IPNet {
 	if IsIP(item) {
 		item += "/32"
@@ -70,8 +71,9 @@ func ToCidr(item string) *net.IPNet {
 	return nil
 }
 
+// AsIPV4CIDR converts ipv4 cidr to net.IPNet pointer
 func AsIPV4IpNet(IPV4 string) *net.IPNet {
-	if IsIP(IPV4) {
+	if IsIPv4(IPV4) {
 		IPV4 += "/32"
 	}
 	_, network, err := net.ParseCIDR(IPV4)
@@ -81,6 +83,19 @@ func AsIPV4IpNet(IPV4 string) *net.IPNet {
 	return network
 }
 
+// AsIPV6IpNet converts ipv6 cidr to net.IPNet pointer
+func AsIPV6IpNet(IPV6 string) *net.IPNet {
+	if IsIPv6(IPV6) {
+		IPV6 += "/64"
+	}
+	_, network, err := net.ParseCIDR(IPV6)
+	if err != nil {
+		return nil
+	}
+	return network
+}
+
+// AsIPV4CIDR converts ipv4 ip to cidr string
 func AsIPV4CIDR(IPV4 string) string {
 	if IsIP(IPV4) {
 		return IPV4 + "/32"
@@ -88,6 +103,7 @@ func AsIPV4CIDR(IPV4 string) string {
 	return IPV4
 }
 
+// AsIPV4CIDR converts ipv6 ip to cidr string
 func AsIPV6CIDR(IPV6 string) string {
 	// todo
 	return IPV6
@@ -108,7 +124,7 @@ func WhatsMyIP() (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.New(fmt.Sprintf("error fetching ip: %s", resp.Status))
+		return "", fmt.Errorf("error fetching ip: %s", resp.Status)
 	}
 
 	ip, err := ioutil.ReadAll(resp.Body)
