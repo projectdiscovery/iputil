@@ -83,8 +83,8 @@ func AsIPV4IpNet(IPV4 string) *net.IPNet {
 	return network
 }
 
-// AsIPV6CIDR converts ipv6 cidr to net.IPNet pointer
-func AsIPV6CIDR(IPV6 string) *net.IPNet {
+// AsIPV6IpNet converts ipv6 cidr to net.IPNet pointer
+func AsIPV6IpNet(IPV6 string) *net.IPNet {
 	if IsIPv6(IPV6) {
 		IPV6 += "/64"
 	}
@@ -93,7 +93,9 @@ func AsIPV6CIDR(IPV6 string) *net.IPNet {
 		return nil
 	}
 	return network
+}
 
+// AsIPV4CIDR converts ipv4 ip to cidr string
 func AsIPV4CIDR(IPV4 string) string {
 	if IsIP(IPV4) {
 		return IPV4 + "/32"
@@ -101,6 +103,7 @@ func AsIPV4CIDR(IPV4 string) string {
 	return IPV4
 }
 
+// AsIPV4CIDR converts ipv6 ip to cidr string
 func AsIPV6CIDR(IPV6 string) string {
 	// todo
 	return IPV6

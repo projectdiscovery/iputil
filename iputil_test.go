@@ -72,7 +72,7 @@ func TestToCidr(t *testing.T) {
 	}
 }
 
-func TestAsIPV4CIDR(t *testing.T) {
+func TestAsIPV4IpNet(t *testing.T) {
 	tests := map[string]bool{
 		"127.0.0.0/24": true,
 		"127.0.0.1":    true,
@@ -80,7 +80,7 @@ func TestAsIPV4CIDR(t *testing.T) {
 		"2001:0db8:85a3:0000:0000:8a2e:0370:7334": false,
 	}
 	for item, ok := range tests {
-		tocidr := AsIPV4CIDR(item)
+		tocidr := AsIPV4IpNet(item)
 		if ok {
 			require.NotNil(t, tocidr, "valid cidr not recognized")
 		} else {
@@ -89,7 +89,7 @@ func TestAsIPV4CIDR(t *testing.T) {
 	}
 }
 
-func TestAsIPV6CIDR(t *testing.T) {
+func TestAsIPV6IpNet(t *testing.T) {
 	tests := map[string]bool{
 		"2001:0db8:85a3:0000:0000:8a2e:0370:7334": true,
 		"2002::1234:abcd:ffff:c0a8:101/64":        true,
