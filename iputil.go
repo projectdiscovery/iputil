@@ -44,7 +44,7 @@ func IsCIDR(str string) bool {
 	return err == nil
 }
 
-// IsCIDR checks if the string is a valid CIDR after replacing - with /
+// IsCIDR checks if the string is an valid CIDR after replacing - with /
 func IsCidrWithExpansion(str string) bool {
 	str = strings.ReplaceAll(str, "-", "/")
 	return IsCIDR(str)
@@ -70,7 +70,7 @@ func ToCidr(item string) *net.IPNet {
 	return nil
 }
 
-func AsIPV4CIDR(IPV4 string) *net.IPNet {
+func AsIPV4IpNet(IPV4 string) *net.IPNet {
 	if IsIP(IPV4) {
 		IPV4 += "/32"
 	}
@@ -79,6 +79,13 @@ func AsIPV4CIDR(IPV4 string) *net.IPNet {
 		return nil
 	}
 	return network
+}
+
+func AsIPV4CIDR(IPV4 string) string {
+	if IsIP(IPV4) {
+		return IPV4 + "/32"
+	}
+	return IPV4
 }
 
 func AsIPV6CIDR(IPV6 string) string {
