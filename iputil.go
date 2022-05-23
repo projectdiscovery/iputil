@@ -61,13 +61,18 @@ func CountIPsInCIDR(cidr string) int64 {
 
 // ToCidr converts a cidr string to net.IPNet pointer
 func ToCidr(item string) *net.IPNet {
-	if IsIP(item) {
+	if IsIPv4(item) {
 		item += "/32"
+	} else if IsIPv6(item) {
+		item += "/128"
 	}
 	if IsCIDR(item) {
 		_, ipnet, _ := net.ParseCIDR(item)
+		// a few ip4 might be expressed as ip6, therefore perform a double conversion
+		_, ipnet, _ = net.ParseCIDR(ipnet.String())
 		return ipnet
 	}
+
 	return nil
 }
 
