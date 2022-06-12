@@ -2,6 +2,7 @@ package iputil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -133,4 +134,26 @@ func WhatsMyIP() (string, error) {
 	}
 
 	return string(ip), nil
+}
+
+// GetSourceIP gets the local ip based the destination ip
+func GetSourceIP(target string) (net.IP, error) {
+	hostPort := net.JoinHostPort(target, "12345")
+	serverAddr, err := net.ResolveUDPAddr("udp", hostPort)
+	if err != nil {
+		return nil, err
+	}
+
+	con, dialUpErr := net.DialUDP("udp", nil, serverAddr)
+	if dialUpErr != nil {
+		return nil, dialUpErr
+	}
+
+	defer con.Close()
+
+	if udpaddr, ok := con.LocalAddr().(*net.UDPAddr); ok {
+		return udpaddr.IP, nil
+	}
+
+	return nil, errors.New("could not get source ip")
 }
