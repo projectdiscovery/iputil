@@ -164,6 +164,9 @@ func GetBindableAddress(port int, ips ...string) (string, error) {
 	var errs error
 	// iterate over ips and return the first bindable one on port p
 	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
 		ipPort := net.JoinHostPort(ip, fmt.Sprint(port))
 		// check if we can listen on tcp
 		l, err := net.Listen("tcp", ipPort)
