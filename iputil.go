@@ -52,13 +52,13 @@ func IsCidrWithExpansion(str string) bool {
 }
 
 // CountIPsInCIDR counts the number of ips in cidr
-func CountIPsInCIDR(cidr string) int64 {
+func CountIPsInCIDR(includeBase, includeBroadcast bool, cidr string) int64 {
 	_, c, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return 0
 	}
 
-	return mapcidr.CountIPsInCIDR(c).Int64()
+	return mapcidr.CountIPsInCIDR(includeBase, includeBroadcast, c).Int64()
 }
 
 // ToCidr converts a cidr string to net.IPNet pointer

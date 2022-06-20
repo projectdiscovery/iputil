@@ -47,12 +47,12 @@ func TestIsCidrWithExpansion(t *testing.T) {
 
 func TestCountIPsInCIDR(t *testing.T) {
 	tests := map[string]int64{
-		"127.0.0.0/24": 255,
-		"0.0.0.0/0":    4294967295,
+		"127.0.0.0/24": 256,
+		"0.0.0.0/0":    4294967296,
 		"127.0.0.0/32": 1,
 	}
 	for c, nips := range tests {
-		require.Equal(t, CountIPsInCIDR(c), nips, "invalid ip count")
+		require.Equal(t, CountIPsInCIDR(true, true, c), nips, "invalid ip count")
 	}
 }
 
