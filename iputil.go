@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/projectdiscovery/mapcidr"
 )
 
@@ -156,4 +157,36 @@ func GetSourceIP(target string) (net.IP, error) {
 	}
 
 	return nil, errors.New("could not get source ip")
+}
+
+// GetBindableAddress on port p from a list of ips
+func GetBindableAddress(port int, ips ...string) (string, error) {
+	var errs error
+	// iterate over ips and return the first bindable one on port p
+	for _, ip := range ips {
+		ipPort := net.JoinHostPort(ip, fmt.Sprint(port))
+		// check if we can listen on tcp
+		l, err := net.Listen("tcp", ipPort)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
+		}
+		l.Close()
+		udpAddr := net.UDPAddr{
+			Port: port,
+			IP:   net.ParseIP(ip),
+		}
+		// check if we can listen on udp
+		lu, err := net.ListenUDP("udp", &udpAddr)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
+		}
+		lu.Close()
+
+		// we found a bindable ip
+		return ip, nil
+	}
+
+	return "", errs
 }
