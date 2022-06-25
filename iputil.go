@@ -2,6 +2,7 @@ package iputil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -10,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/projectdiscovery/mapcidr"
+	"github.com/projectdiscovery/stringsutil"
+	"go.uber.org/multierr"
 )
 
 // IsIP checks if a string is either IP version 4 or 6. Alias for `net.ParseIP`
@@ -26,15 +29,45 @@ func IsPort(str string) bool {
 }
 
 // IsIPv4 checks if the string is an IP version 4.
-func IsIPv4(str string) bool {
-	ip := net.ParseIP(str)
-	return ip != nil && strings.Contains(str, ".")
+func IsIPv4(ips ...interface{}) bool {
+	for _, ip := range ips {
+		switch ipv := ip.(type) {
+		case string:
+			parsedIP := net.ParseIP(ipv)
+			isIP4 := parsedIP != nil && parsedIP.To4() != nil && stringsutil.ContainsAny(ipv, ".")
+			if !isIP4 {
+				return false
+			}
+		case net.IP:
+			isIP4 := ipv != nil && ipv.To4() != nil && stringsutil.ContainsAny(ipv.String(), ".")
+			if !isIP4 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 // IsIPv6 checks if the string is an IP version 6.
-func IsIPv6(str string) bool {
-	ip := net.ParseIP(str)
-	return ip != nil && strings.Contains(str, ":")
+func IsIPv6(ips ...interface{}) bool {
+	for _, ip := range ips {
+		switch ipv := ip.(type) {
+		case string:
+			parsedIP := net.ParseIP(ipv)
+			isIP6 := parsedIP != nil && parsedIP.To16() != nil && stringsutil.ContainsAny(ipv, ":")
+			if !isIP6 {
+				return false
+			}
+		case net.IP:
+			isIP6 := ipv != nil && ipv.To16() != nil && stringsutil.ContainsAny(ipv.String(), ":")
+			if !isIP6 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 // IsCIDR checks if the string is an valid CIDR notiation (IPV4 & IPV6)
@@ -138,4 +171,61 @@ func WhatsMyIP() (string, error) {
 	}
 
 	return string(ip), nil
+}
+
+// GetSourceIP gets the local ip based the destination ip
+func GetSourceIP(target string) (net.IP, error) {
+	hostPort := net.JoinHostPort(target, "12345")
+	serverAddr, err := net.ResolveUDPAddr("udp", hostPort)
+	if err != nil {
+		return nil, err
+	}
+
+	con, dialUpErr := net.DialUDP("udp", nil, serverAddr)
+	if dialUpErr != nil {
+		return nil, dialUpErr
+	}
+
+	defer con.Close()
+
+	if udpaddr, ok := con.LocalAddr().(*net.UDPAddr); ok {
+		return udpaddr.IP, nil
+	}
+
+	return nil, errors.New("could not get source ip")
+}
+
+// GetBindableAddress on port p from a list of ips
+func GetBindableAddress(port int, ips ...string) (string, error) {
+	var errs error
+	// iterate over ips and return the first bindable one on port p
+	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+		ipPort := net.JoinHostPort(ip, fmt.Sprint(port))
+		// check if we can listen on tcp
+		l, err := net.Listen("tcp", ipPort)
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			continue
+		}
+		l.Close()
+		udpAddr := net.UDPAddr{
+			Port: port,
+			IP:   net.ParseIP(ip),
+		}
+		// check if we can listen on udp
+		lu, err := net.ListenUDP("udp", &udpAddr)
+		if err != nil {
+			errs = multierr.Append(errs, err)
+			continue
+		}
+		lu.Close()
+
+		// we found a bindable ip
+		return ip, nil
+	}
+
+	return "", errs
 }
