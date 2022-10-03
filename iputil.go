@@ -35,14 +35,10 @@ func IsIPv4(ips ...interface{}) bool {
 		case string:
 			parsedIP := net.ParseIP(ipv)
 			isIP4 := parsedIP != nil && parsedIP.To4() != nil && stringsutil.ContainsAny(ipv, ".")
-			if !isIP4 {
-				return false
-			}
+			return isIP4
 		case net.IP:
 			isIP4 := ipv != nil && ipv.To4() != nil && stringsutil.ContainsAny(ipv.String(), ".")
-			if !isIP4 {
-				return false
-			}
+			return isIP4
 		}
 	}
 
@@ -56,14 +52,10 @@ func IsIPv6(ips ...interface{}) bool {
 		case string:
 			parsedIP := net.ParseIP(ipv)
 			isIP6 := parsedIP != nil && parsedIP.To16() != nil && stringsutil.ContainsAny(ipv, ":")
-			if !isIP6 {
-				return false
-			}
+			return isIP6
 		case net.IP:
 			isIP6 := ipv != nil && ipv.To16() != nil && stringsutil.ContainsAny(ipv.String(), ":")
-			if !isIP6 {
-				return false
-			}
+			return isIP6
 		}
 	}
 
